@@ -72,27 +72,58 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
 // Get articles by reference facture
 router.get('/facture/:ref_facture', async (req, res) => {
-    const { ref_facture } = req.params;
-    try {
-      const [rows] = await pool.execute('SELECT * FROM articles_vendu WHERE ref_facture = ?', [ref_facture]);
-      res.json(rows);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  const { ref_facture } = req.params;
+  try {
+    const [rows] = await pool.execute(`
+      SELECT 
+        av.*, 
+        a.nom, 
+        a.marque, 
+        a.prix_vente_ttc, 
+        a.prix_vente_ht, 
+        a.tva
+      FROM 
+        articles_vendu av
+      JOIN 
+        articles a ON av.id_article = a.id
+      WHERE 
+        av.ref_facture = ?
+    `, [ref_facture]);
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
-  // Get articles by reference bon de livraison
+
+
+// Get articles by reference bon de livraison
 router.get('/bon_de_livraison/:ref_bon_de_livraison', async (req, res) => {
-    const { ref_bon_de_livraison } = req.params;
-    try {
-      const [rows] = await pool.execute('SELECT * FROM articles_vendu WHERE ref_bon_de_livraison = ?', [ref_bon_de_livraison]);
-      res.json(rows);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  });
+  const { ref_bon_de_livraison } = req.params;
+  try {
+    const [rows] = await pool.execute(`
+      SELECT 
+        av.*, 
+        a.nom, 
+        a.marque, 
+        a.prix_vente_ttc, 
+        a.prix_vente_ht, 
+        a.tva
+      FROM 
+        articles_vendu av
+      JOIN 
+        articles a ON av.id_article = a.id
+      WHERE 
+        av.ref_bon_de_livraison = ?
+    `, [ref_bon_de_livraison]);
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 module.exports = router;

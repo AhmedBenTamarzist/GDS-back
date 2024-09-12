@@ -25,12 +25,13 @@ router.get('/:id', async (req, res) => {
 
 // Add a new article
 router.post('/', async (req, res) => {
-  const { nom, quantite, marque, prix, prix_achat, description } = req.body;
+  const { nom, quantite, marque, prix_vente_ttc, prix_achat_ht, description, prix_vente_ht, tva, max_remise } = req.body;
   
   try {
     const [result] = await pool.execute(
-      'INSERT INTO articles (nom, quantite, marque, prix, prix_achat, description) VALUES (?, ?, ?, ?, ?, ?)',
-      [nom || null, quantite || 0, marque || null, prix || 0, prix_achat || 0, description || null]
+      `INSERT INTO articles (nom, quantite, marque, prix_vente_ttc, prix_achat_ht, description, prix_vente_ht, tva, max_remise) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nom || null, quantite || 0, marque || null, prix_vente_ttc || 0, prix_achat_ht || 0, description || null, prix_vente_ht || 0, tva || 0, max_remise || null]
     );
     res.json({ id: result.insertId });
   } catch (error) {
@@ -38,13 +39,16 @@ router.post('/', async (req, res) => {
   }
 });
 
-
 // Update an article
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { nom, prix } = req.body;
+  const { nom, quantite, marque, prix_vente_ttc, prix_achat_ht, description, prix_vente_ht, tva, max_remise } = req.body;
+  
   try {
-    const [result] = await pool.execute('UPDATE articles SET nom = ?, prix = ? WHERE id = ?', [nom, prix, id]);
+    const [result] = await pool.execute(
+      `UPDATE articles SET nom = ?, quantite = ?, marque = ?, prix_vente_ttc = ?, prix_achat_ht = ?, description = ?, prix_vente_ht = ?, tva = ?, max_remise = ? WHERE id = ?`,
+      [nom, quantite, marque, prix_vente_ttc, prix_achat_ht, description, prix_vente_ht, tva, max_remise, id]
+    );
     res.json({ changes: result.affectedRows });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -54,11 +58,11 @@ router.put('/:id', async (req, res) => {
 // Add a new route to update stock
 router.put('/updateStock/:id', async (req, res) => {
   const { id } = req.params;
-  const { quantite, prix,prix_achat } = req.body;
+  const { quantite, prix_vente_ttc, prix_achat_ht } = req.body;
   try {
     const [result] = await pool.execute(
-      'UPDATE articles SET quantite = quantite + ? , prix = ? , prix_achat= ? WHERE id = ?',
-      [quantite, prix,prix_achat, id]
+      'UPDATE articles SET quantite = quantite + ?, prix_vente_ttc = ?, prix_achat_ht = ? WHERE id = ?',
+      [quantite, prix_vente_ttc, prix_achat_ht, id]
     );
     res.json({ message: 'Stock updated successfully(add to stock)' });
   } catch (error) {
@@ -66,8 +70,7 @@ router.put('/updateStock/:id', async (req, res) => {
   }
 });
 
-
-// Add a new route to update stock(sustraction)
+// Add a new route to update stock (subtraction)
 router.put('/sustractioStock/:id', async (req, res) => {
   const { id } = req.params;
   const { quantite } = req.body;

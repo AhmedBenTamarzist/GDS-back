@@ -35,12 +35,26 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
+
+// Basic route
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
 // Use routes
 app.use('/api/clients', clientsRoutes);
 app.use('/api/articles', articlesRoutes);
 app.use('/api/factures', factureRoutes);
 app.use('/api/bons-de-livraison', bonLivraisonRoutes);
 app.use('/api/articles_vendu', articlesVenduRoutes);
+
+
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
+});
 // Start the server
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
